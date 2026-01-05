@@ -7,17 +7,21 @@ import {
   getBlogById,
   deleteBlogById,
   updateBlogById,
-  commentOnBlog,
-  deleteBlog,
-  getCommentById,
-  getCommentByBlogId,
-  getAllComments,
   addBlogCategory,
   getAllBlogCategory,
   getAllBlogByCategory,
-  getMainBlog
-} from "../blog/bog-controller.js";
+  getMainBlog,
+  getLandingBlogs
+} from "../blog/blog-controller.js";
+import {
+  commentOnBlog,
+  deleteComment,
+  getCommentById,
+  getCommentByBlogId,
+  getAllComments,
+} from "../blog/comment-controller.js";
 import { verifyToken } from "../utils/jwtInterceptor.js";
+import { auditMiddleware } from "../utils/audit-service.js";
 
 dotenv.config();
 const router = express.Router();
@@ -28,6 +32,14 @@ const validateBlog = [
   body("category").notEmpty().withMessage("Category is required"),
   body("content").notEmpty().withMessage("Content is required"),
   body("image").notEmpty().withMessage("Image is required"),
+];
+
+const validateBlogUpdate = [
+  body("id").notEmpty().withMessage("Blog ID is required"),
+  body("title").optional(),
+  body("category").optional(),
+  body("content").optional(),
+  body("image").optional(),
 ];
 
 const validateComment = [
@@ -90,7 +102,7 @@ const validateComment = [
  *       500:
  *         description: Internal server error
  */
-router.post("/add", verifyToken, validateBlog, async (req, res) => {
+router.post("/add", verifyToken, auditMiddleware("BLOG_CREATE"), validateBlog, async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array(), statusCode: 400 });
@@ -151,7 +163,7 @@ router.post("/add", verifyToken, validateBlog, async (req, res) => {
  *         description: Internal server error
  */
 router.get("/getMainBlog", async (req, res) => {
-  const {isMain} = req.query;
+  const { isMain } = req.query;
   const response = await getMainBlog(isMain);
   return res.send(response);
 });
@@ -207,6 +219,11 @@ router.get("/getMainBlog", async (req, res) => {
 router.get("/all", async (req, res) => {
   const response = await getAllBlog();
   return res.send(response);
+});
+
+router.get("/landing", async (req, res) => {
+  const result = await getLandingBlogs();
+  return res.send(result);
 });
 
 /**
@@ -309,7 +326,7 @@ router.get("/get-by-id/:id", async (req, res) => {
  *       500:
  *         description: Internal server error
  */
-router.delete("/delete/:id", async (req, res) => {
+router.delete("/delete/:id", verifyToken, auditMiddleware("BLOG_DELETE"), async (req, res) => {
   const id = req.params.id;
   const result = await deleteBlogById(id);
   return res.send(result);
@@ -351,7 +368,7 @@ router.delete("/delete/:id", async (req, res) => {
  *       500:
  *         description: Internal server error
  */
-router.patch("/update", validateBlog, async (req, res) => {
+router.patch("/update", verifyToken, auditMiddleware("BLOG_UPDATE"), validateBlogUpdate, async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array(), statusCode: 400 });
@@ -437,7 +454,7 @@ router.patch("/update", validateBlog, async (req, res) => {
  *                   example: 500
  */
 
-router.post("/comment", validateComment, async (req, res) => {
+router.post("/comment", auditMiddleware("BLOG_COMMENT"), validateComment, async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array(), statusCode: 400 });
@@ -512,7 +529,7 @@ router.post("/comment", validateComment, async (req, res) => {
  *                   type: integer
  *                   example: 500
  */
-router.post("/add/create/blogCategory", verifyToken, async (req, res) => {
+router.post("/add/create/blogCategory", verifyToken, auditMiddleware("BLOG_CATEGORY_CREATE"), async (req, res) => {
   const response = await addBlogCategory(req);
   return res.send(response);
 });
@@ -568,8 +585,8 @@ router.post("/add/create/blogCategory", verifyToken, async (req, res) => {
  *                   example: 500
  */
 router.get("/get/all/blogCategory", async (req, res) => {
-    const response = await getAllBlogCategory();
-    return res.send(response);
+  const response = await getAllBlogCategory();
+  return res.send(response);
 });
 
 
@@ -652,8 +669,8 @@ router.get("/get/all/blogCategory", async (req, res) => {
  *                   example: 500
  */
 router.get("/get/all/blog/by/category", async (req, res) => {
-    const response = await getAllBlogByCategory(req);
-    return res.send(response);
+  const response = await getAllBlogByCategory(req);
+  return res.send(response);
 });
 
 /**
@@ -715,7 +732,7 @@ router.get("/get/all/blog/by/category", async (req, res) => {
 router.delete("/delete-comments/:id", async (req, res) => {
   const id = req.params.id;
   console.log("Deleting comments for blog ID:", id);
-  const result = await deleteBlog(id);
+  const result = await deleteComment(id);
   return res.send(result);
 });
 

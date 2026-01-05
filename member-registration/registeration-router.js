@@ -4,11 +4,13 @@ import {
   getAllMembers,
   registerMember,
   getMember,
+  getMemberByIdNo,
   deleteMember,
   updateMember,
 } from "./register-controller.js";
 import dotenv from "dotenv";
 import { verifyToken } from "../utils/jwtInterceptor.js";
+import { auditMiddleware } from "../utils/audit-service.js";
 
 dotenv.config();
 const router = express.Router();
@@ -29,17 +31,17 @@ const validateRegistration = [
 ];
 
 const validateUpdate = [
-  body("first_name").notEmpty().withMessage("First name is required"),
-  body("last_name").notEmpty().withMessage("Last name is required"),
-  body("email").isEmail().withMessage("Valid email is required"),
-  body("dob").notEmpty().withMessage("Date of birth is required"),
-  body("gender").notEmpty().withMessage("Gender is required"),
-  body("phone").notEmpty().withMessage("Phone number is required"),
-  body("idNo").notEmpty().withMessage("National ID is required"),
-  body("Constituency").notEmpty().withMessage("Constituency is required"),
-  body("ward").notEmpty().withMessage("Ward is required"),
-  body("county").notEmpty().withMessage("County is required"),
-  body("area_of_interest").notEmpty().withMessage("Area of interest is required"),
+  body("first_name").optional(),
+  body("last_name").optional(),
+  body("email").optional().isEmail().withMessage("Valid email is required"),
+  body("dob").optional(),
+  body("gender").optional(),
+  body("phone").optional(),
+  body("idNo").optional(),
+  body("Constituency").optional(),
+  body("ward").optional(),
+  body("county").optional(),
+  body("area_of_interest").optional(),
 ];
 
 /**
@@ -144,8 +146,8 @@ const validateUpdate = [
  *         description: Internal server error
  */
 
-router.post("/register/member", validateRegistration, async (req, res) => {
-  console.log("my request create",  req.body)
+router.post("/register/member", auditMiddleware("MEMBER_REGISTER"), validateRegistration, async (req, res) => {
+  console.log("my request create", req.body)
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -199,6 +201,32 @@ router.get("/get/member/:id", async (req, res) => {
 
 /**
  * @swagger
+ * /api/members/get/member/idno/{idNo}:
+ *   get:
+ *     summary: Get a specific member by National ID
+ *     description: Fetch a member's details by their National ID Number
+ *     tags: [Member]
+ *     parameters:
+ *       - in: path
+ *         name: idNo
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The member's National ID
+ *     responses:
+ *       200:
+ *         description: Member found
+ *       404:
+ *         description: Member not found
+ */
+router.get("/get/member/idno/:idNo", auditMiddleware("MEMBER_GET_BY_IDNO"), async (req, res) => {
+  const idNo = req.params.idNo;
+  const results = await getMemberByIdNo(idNo);
+  return res.send(results);
+});
+
+/**
+ * @swagger
  * /api/members/delete/member/{id}:
  *   delete:
  *     summary: Delete a member
@@ -214,7 +242,7 @@ router.get("/get/member/:id", async (req, res) => {
  *       200:
  *         description: Member deleted successfully
  */
-router.delete("/delete/member/:id", async (req, res) => {
+router.delete("/delete/member/:id", verifyToken, auditMiddleware("MEMBER_DELETE"), async (req, res) => {
   const memberId = req.params.id;
   const results = await deleteMember(memberId);
   return res.send(results);
@@ -254,7 +282,7 @@ router.delete("/delete/member/:id", async (req, res) => {
  *       200:
  *         description: Member updated successfully
  */
-router.patch("/update/member/:id", validateUpdate, async (req, res) => {
+router.patch("/update/member/:id", verifyToken, auditMiddleware("MEMBER_UPDATE"), validateUpdate, async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });

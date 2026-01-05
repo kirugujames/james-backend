@@ -15,9 +15,11 @@ import {
   updateAnEvent, updateEvent,
   getEventBookingByEventId,
   getEventBookingByMemberCode,
-  getEventBookingById
+  getEventBookingById,
+  getLandingEvents
 } from "./events-controller.js";
 import { verifyToken } from "../utils/jwtInterceptor.js";
+import { auditMiddleware } from "../utils/audit-service.js";
 
 dotenv.config();
 
@@ -117,7 +119,7 @@ const validateEventCreation = [
  *       500:
  *         description: Internal server error
  */
-router.post("/add", validateEventCreation, verifyToken, async (req, res) => {
+router.post("/add", validateEventCreation, verifyToken, auditMiddleware("EVENT_CREATE"), async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res
@@ -179,6 +181,11 @@ router.post("/add", validateEventCreation, verifyToken, async (req, res) => {
  */
 router.get("/all", async (req, res) => {
   const result = await getAllEvents();
+  return res.send(result);
+});
+
+router.get("/landing", async (req, res) => {
+  const result = await getLandingEvents();
   return res.send(result);
 });
 
@@ -281,7 +288,7 @@ router.get("/get/by/id/:id", async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.delete("/delete/:id", async (req, res) => {
+router.delete("/delete/:id", verifyToken, auditMiddleware("EVENT_DELETE"), async (req, res) => {
   const { id } = req.params;
   const result = await deleteEventById(id);
   return res.send(result);
@@ -342,9 +349,9 @@ router.delete("/delete/:id", async (req, res) => {
  *       500:
  *         description: Server error while updating the event
  */
-router.patch("/update", async (req, res) => {
+router.patch("/update", verifyToken, auditMiddleware("EVENT_UPDATE"), async (req, res) => {
   const result = await updateEvent(req);
-  return res.send(result);
+  return res.status(result.statusCode).json(result);
 });
 
 /**
@@ -388,7 +395,7 @@ router.patch("/update", async (req, res) => {
  *       500:
  *         description: Server error while booking the event.
  */
-router.post("/book-event", async (req, res) => {
+router.post("/book-event", auditMiddleware("EVENT_BOOKING"), async (req, res) => {
   const result = await bookAnEvent(req);
   return res.send(result);
 });
@@ -444,7 +451,7 @@ router.post("/book-event", async (req, res) => {
  *       500:
  *         description: Server error while updating the booking.
  */
-router.patch("/booking-event/update", async (req, res) => {
+router.patch("/booking-event/update", auditMiddleware("EVENT_BOOKING_UPDATE"), async (req, res) => {
   const result = await updateAnEvent(req);
   return res.send(result);
 });
@@ -682,7 +689,7 @@ router.get("/booked-event/get-by-member-code/:member_code", async (req, res) => 
  */
 router.get("/booked-event/get-by-id/:id", async (req, res) => {
   const { id } = req.params;
-  console.log("my  idddd",  id)
+  console.log("my  idddd", id)
   if (!id) {
     return res.send({ message: "Id is required", statusCode: 400 });
   }

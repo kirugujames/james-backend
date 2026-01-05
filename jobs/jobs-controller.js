@@ -104,8 +104,7 @@ export async function deleteJob(id) {
 
 // update job listing
 export async function updateJobListing(req) {
-  const { job_title, description, id } = req.body;
-  console.log("my request", req.body);
+  const { job_title, description, status, id } = req.body;
 
   try {
     const job = await Job.findByPk(id);
@@ -117,8 +116,7 @@ export async function updateJobListing(req) {
       };
     }
 
-    await job.update({ job_title, description });
-    console.log("Update result:", job);
+    await job.update({ job_title, description, status });
 
     return {
       message: "job listing updated successfully",
@@ -134,3 +132,4 @@ export async function updateJobListing(req) {
     };
   }
 }
+

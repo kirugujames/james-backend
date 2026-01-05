@@ -21,6 +21,10 @@ const Job = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    status: {
+      type: DataTypes.ENUM("active", "passed"),
+      defaultValue: "active",
+    },
   },
   {
     tableName: "jobs",
