@@ -4,16 +4,20 @@ import {
   authenticateUser,
   verifyAuthOtp,
   resendOtp,
-  resetPassword,
+  forgotPassword,
+  resetPasswordWithToken,
+  toggleUserStatus,
   logoutUser,
   createRole,
   getRoles,
   updateRole,
   deleteRole,
-  getRoleById,
-  getAllUsers
+  getAllUsers,
+  refreshAccessToken,
+  changePassword
 } from "./auth-controller.js";
 import { verifyToken } from "../utils/jwtInterceptor.js";
+import { auditMiddleware } from "../utils/audit-service.js";
 
 const router = express.Router();
 /**
@@ -50,7 +54,7 @@ const router = express.Router();
  *         description: Validation error
  */
 
-router.post("/register", async (req, res) => {
+router.post("/register", auditMiddleware("USER_REGISTER"), async (req, res) => {
   const result = await registerUser(req);
   return res.status(result.statusCode).json(result);
 });
@@ -82,7 +86,7 @@ router.post("/register", async (req, res) => {
  *       401:
  *         description: Invalid credentials
  */
-router.post("/login", async (req, res) => {
+router.post("/login", auditMiddleware("USER_LOGIN"), async (req, res) => {
   const result = await authenticateUser(req);
   return res.status(result.statusCode).json(result);
 });
@@ -115,7 +119,7 @@ router.post("/login", async (req, res) => {
  *         description: Invalid or expired OTP
  */
 
-router.post("/verify-otp", async (req, res) => {
+router.post("/verify-otp", auditMiddleware("VERIFY_OTP"), async (req, res) => {
   const result = await verifyAuthOtp(req);
   return res.status(result.statusCode).json(result);
 });
@@ -150,13 +154,14 @@ router.post("/resend-otp", async (req, res) => {
   return res.status(result.statusCode).json(result);
 });
 
+// Forgot Password
 /**
  * @swagger
- * /api/users/reset-password:
+ * /api/users/forgot-password:
  *   post:
- *     summary: Reset user password
- *     description: Allows a user to reset their password by providing their username and new password.
- *     tags: [Auth]   
+ *     summary: Request password reset link
+ *     description: Sends a password reset link to the user's email if it exists.
+ *     tags: [Auth]
  *     requestBody:
  *       required: true
  *       content:
@@ -164,10 +169,41 @@ router.post("/resend-otp", async (req, res) => {
  *           schema:
  *             type: object
  *             required:
- *               - username
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: user@example.com
+ *     responses:
+ *       200:
+ *         description: Reset link sent
+ *       404:
+ *         description: User not found
+ */
+router.post("/forgot-password", auditMiddleware("FORGOT_PASSWORD"), async (req, res) => {
+  const result = await forgotPassword(req);
+  return res.status(result.statusCode).json(result);
+});
+
+// Reset Password with Token
+/**
+ * @swagger
+ * /api/users/reset-password-token:
+ *   post:
+ *     summary: Reset password using token
+ *     description: Resets the user's password using a valid reset token from email.
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
  *               - newPassword
  *             properties:
- *               username:
+ *               token:
  *                 type: string
  *               newPassword:
  *                 type: string
@@ -175,14 +211,63 @@ router.post("/resend-otp", async (req, res) => {
  *       200:
  *         description: Password reset successful
  *       400:
- *         description: Validation error
+ *         description: Invalid or expired token
  */
-
-router.post("/reset-password", async (req, res) => {
-  const result = await resetPassword(req);
-  console.log(result);
+router.post("/reset-password-token", auditMiddleware("RESET_PASSWORD"), async (req, res) => {
+  const result = await resetPasswordWithToken(req);
   return res.status(result.statusCode).json(result);
 });
+
+// Change Password (Authenticated)
+/**
+ * @swagger
+ * /api/users/change-password:
+ *   patch:
+ *     summary: Change password
+ *     description: Allows a user to change their password by providing their email, old password, and new password.
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - oldPassword
+ *               - newPassword
+ *             properties:
+ *               email:
+ *                 type: string
+ *               oldPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *       400:
+ *         description: Invalid current password
+ *       404:
+ *         description: User not found
+ */
+router.patch("/change-password", auditMiddleware("CHANGE_PASSWORD"), async (req, res) => {
+  const result = await changePassword(req);
+  return res.status(result.statusCode).json(result);
+});
+
+// Toggle User Status (Admin)
+router.post("/toggle-status", verifyToken, auditMiddleware("TOGGLE_USER_STATUS"), async (req, res) => {
+  const result = await toggleUserStatus(req);
+  return res.status(result.statusCode).json(result);
+});
+
+// Refresh Token
+router.post("/refresh-token", async (req, res) => {
+  const result = await refreshAccessToken(req);
+  return res.status(result.statusCode).json(result);
+});
+
 
 
 /**

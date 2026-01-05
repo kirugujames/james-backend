@@ -263,3 +263,23 @@ export async function getEventBookingByMemberCode(member_code) {
     }
 }
 
+// Get events for landing page (latest 3)
+export async function getLandingEvents() {
+    try {
+        const result = await Events.findAll({
+            limit: 3,
+            order: [['event_date', 'DESC']]
+        });
+        return {
+            message: "Landing events fetched successfully",
+            statusCode: 200,
+            data: result
+        }
+    } catch (error) {
+        return {
+            message: error.message.split(":")[0],
+            statusCode: 500,
+            data: null
+        }
+    }
+}

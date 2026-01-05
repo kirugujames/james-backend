@@ -1,0 +1,192 @@
+{
+    "counties": [
+        {
+            "name": "MOMBASA",
+            "code": "001"
+        },
+        {
+            "name": "KWALE",
+            "code": "002"
+        },
+        {
+            "name": "KILIFI",
+            "code": "003"
+        },
+        {
+            "name": "TANA RIVER",
+            "code": "004"
+        },
+        {
+            "name": "LAMU",
+            "code": "005"
+        },
+        {
+            "name": "TAITA TAVETA",
+            "code": "006"
+        },
+        {
+            "name": "GARISSA",
+            "code": "007"
+        },
+        {
+            "name": "WAJIR",
+            "code": "008"
+        },
+        {
+            "name": "MANDERA",
+            "code": "009"
+        },
+        {
+            "name": "MARSABIT",
+            "code": "010"
+        },
+        {
+            "name": "ISIOLO",
+            "code": "011"
+        },
+        {
+            "name": "MERU",
+            "code": "012"
+        },
+        {
+            "name": "THARAKA-NITHI",
+            "code": "013"
+        },
+        {
+            "name": "EMBU",
+            "code": "014"
+        },
+        {
+            "name": "KITUI",
+            "code": "015"
+        },
+        {
+            "name": "MACHAKOS",
+            "code": "016"
+        },
+        {
+            "name": "MAKUENI",
+            "code": "017"
+        },
+        {
+            "name": "NYANDARUA",
+            "code": "018"
+        },
+        {
+            "name": "NYERI",
+            "code": "019"
+        },
+        {
+            "name": "KIRINYAGA",
+            "code": "020"
+        },
+        {
+            "name": "MURANG'A",
+            "code": "021"
+        },
+        {
+            "name": "KIAMBU",
+            "code": "022"
+        },
+        {
+            "name": "TURKANA",
+            "code": "023"
+        },
+        {
+            "name": "WEST POKOT",
+            "code": "024"
+        },
+        {
+            "name": "SAMBURU",
+            "code": "025"
+        },
+        {
+            "name": "TRANS NZOIA",
+            "code": "026"
+        },
+        {
+            "name": "UASIN GISHU",
+            "code": "027"
+        },
+        {
+            "name": "ELGEYO/MARAKWET",
+            "code": "028"
+        },
+        {
+            "name": "NANDI",
+            "code": "029"
+        },
+        {
+            "name": "BARINGO",
+            "code": "030"
+        },
+        {
+            "name": "LAIKIPIA",
+            "code": "031"
+        },
+        {
+            "name": "NAKURU",
+            "code": "032"
+        },
+        {
+            "name": "NAROK",
+            "code": "033"
+        },
+        {
+            "name": "KAJIADO",
+            "code": "034"
+        },
+        {
+            "name": "KERICHO",
+            "code": "035"
+        },
+        {
+            "name": "BOMET",
+            "code": "036"
+        },
+        {
+            "name": "KAKAMEGA",
+            "code": "037"
+        },
+        {
+            "name": "VIHIGA",
+            "code": "038"
+        },
+        {
+            "name": "BUNGOMA",
+            "code": "039"
+        },
+        {
+            "name": "BUSIA",
+            "code": "040"
+        },
+        {
+            "name": "SIAYA",
+            "code": "041"
+        },
+        {
+            "name": "KISUMU",
+            "code": "042"
+        },
+        {
+            "name": "HOMA BAY",
+            "code": "043"
+        },
+        {
+            "name": "MIGORI",
+            "code": "044"
+        },
+        {
+            "name": "KISII",
+            "code": "045"
+        },
+        {
+            "name": "NYAMIRA",
+            "code": "046"
+        },
+        {
+            "name": "NAIROBI",
+            "code": "047"
+        }
+    ]
+}

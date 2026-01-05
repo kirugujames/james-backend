@@ -1,6 +1,6 @@
 import dotenv from "dotenv";
 import MemberRegistration from "./models/memberRegistration.js";
-import {registerUserAsMember } from "../auth/auth-controller.js";
+import { registerUserAsMember } from "../auth/auth-controller.js";
 import { randomBytes } from "crypto";
 
 dotenv.config();
@@ -24,6 +24,7 @@ export async function registerMember(req) {
     doc_type,
     username,
     role_id,
+    transaction_id,
   } = req.body;
 
   const password = generateStrongTempPassword();
@@ -75,16 +76,19 @@ export async function registerMember(req) {
       gender,
       phone,
       idNo,
-      constituency:Constituency,
+      constituency: Constituency,
       ward,
       county,
       area_of_interest,
       doc_type,
       member_code,
+      transaction_id,
+      is_paid: transaction_id ? true : false,
+      status: "active",
     });
 
     // Create user login account too
-    const authResponse = await registerUserAsMember(member_code, password, role_id, email );
+    const authResponse = await registerUserAsMember(member_code, password, role_id, email);
 
     console.log("User registration response:", authResponse);
 
@@ -138,6 +142,31 @@ export async function getMember(id) {
     if (!member) {
       return {
         message: "Member not found",
+        data: null,
+        statusCode: 404,
+      };
+    }
+    return {
+      message: "Member fetched successfully",
+      data: member,
+      statusCode: 200,
+    };
+  } catch (error) {
+    return {
+      message: error.message,
+      data: null,
+      statusCode: 500,
+    };
+  }
+}
+
+// Get member by National ID
+export async function getMemberByIdNo(idNo) {
+  try {
+    const member = await MemberRegistration.findOne({ where: { idNo } });
+    if (!member) {
+      return {
+        message: "Member not found with that ID number",
         data: null,
         statusCode: 404,
       };
@@ -239,6 +268,33 @@ export async function updateMember(req) {
     };
   }
 
+}
+
+// Toggle Member Status (Withdrawn/Active)
+export async function toggleMemberStatus(req) {
+  const { id, status } = req.body; // active or withdrawn
+  try {
+    const member = await MemberRegistration.findByPk(id);
+    if (!member) {
+      return {
+        message: "Member not found",
+        statusCode: 404,
+      };
+    }
+
+    await member.update({ status });
+    return {
+      message: `Member status updated to ${status} successfully`,
+      data: member,
+      statusCode: 200,
+    };
+  } catch (error) {
+    return {
+      message: error.message,
+      data: null,
+      statusCode: 500,
+    };
+  }
 }
 
 function generateStrongTempPassword() {

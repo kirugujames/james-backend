@@ -78,6 +78,18 @@ const MemberRegistration = sequelize.define(
       allowNull: false,
       unique: true,
     },
+    status: {
+      type: DataTypes.ENUM("active", "withdrawn"),
+      defaultValue: "active",
+    },
+    is_paid: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    transaction_id: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
   {
     tableName: "memberRegistration",

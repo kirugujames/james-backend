@@ -1,0 +1,152 @@
+{
+  "subcounties": [
+    {
+      "name": "changamwe",
+      "county_id": 1
+    },
+    {
+      "name": "jomvu",
+      "county_id": 1
+    },
+    {
+      "name": "kisauni",
+      "county_id": 1
+    },
+    {
+      "name": "nyali",
+      "county_id": 1
+    },
+    {
+      "name": "likoni",
+      "county_id": 1
+    },
+    {
+      "name": "mvita",
+      "county_id": 1
+    },
+    {
+      "name": "msambweni",
+      "county_id": 2
+    },
+    {
+      "name": "lungalunga",
+      "county_id": 2
+    },
+    {
+      "name": "matuga",
+      "county_id": 2
+    },
+    {
+      "name": "kinango",
+      "county_id": 2
+    },
+    {
+      "name": "kilifi north",
+      "county_id": 3
+    },
+    {
+      "name": "kilifi south",
+      "county_id": 3
+    },
+    {
+      "name": "kaloleni",
+      "county_id": 3
+    },
+    {
+      "name": "rabai",
+      "county_id": 3
+    },
+    {
+      "name": "ganze",
+      "county_id": 3
+    },
+    {
+      "name": "malindi",
+      "county_id": 3
+    },
+    {
+      "name": "magarini",
+      "county_id": 3
+    },
+    {
+      "name": "garsen",
+      "county_id": 4
+    },
+    {
+      "name": "galole",
+      "county_id": 4
+    },
+    {
+      "name": "bura",
+      "county_id": 4
+    },
+    {
+      "name": "lamu east",
+      "county_id": 5
+    },
+    {
+      "name": "lamu west",
+      "county_id": 5
+    },
+    {
+      "name": "taveta",
+      "county_id": 6
+    },
+    {
+      "name": "wundanyi",
+      "county_id": 6
+    },
+    {
+      "name": "mwatate",
+      "county_id": 6
+    },
+    {
+      "name": "voi",
+      "county_id": 6
+    },
+    {
+      "name": "garissa township",
+      "county_id": 7
+    },
+    {
+      "name": "balambala",
+      "county_id": 7
+    },
+    {
+      "name": "lagdera",
+      "county_id": 7
+    },
+    {
+      "name": "dadaab",
+      "county_id": 7
+    },
+    {
+      "name": "fafi",
+      "county_id": 7
+    },
+    {
+      "name": "ijara",
+      "county_id": 7
+    },
+    {
+      "name": "wajir north",
+      "county_id": 8
+    },
+    {
+      "name": "wajir east",
+      "county_id": 8
+    },
+    {
+      "name": "tarbaj",
+      "county_id": 8
+    },
+    {
+      "name": "wajir west",
+      "county_id": 8
+    },
+    {
+      "name": "eldas",
+      "county_id": 8
+    }
+  ]
+}
