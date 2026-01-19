@@ -43,7 +43,6 @@ import mpesaRouter from "./mpesa/mpesa-router.js";
 import locationRouter from "./locations/location-router.js";
 import partyPositionRouter from "./party-positions/party-position-router.js";
 
-
 dotenv.config();
 const app = express();
 
@@ -53,7 +52,9 @@ app.use(cors());
 
 // Load environment variables
 const PORT = process.env.PORT || 3000;
-const BASE_URL = process.env.BASE_URL || 'http://localhost';
+const BASE_URL = process.env.BASE_URL || process.env.VERCEL_URL 
+  ? `https://${process.env.VERCEL_URL}` 
+  : 'http://localhost';
 
 // Swagger setup
 export const swaggerOptions = {
@@ -64,7 +65,12 @@ export const swaggerOptions = {
       version: "1.0.0",
       description: "API documentation for Shikana Frontliner Party",
     },
-    servers: [{ url: `${BASE_URL}:${PORT}`, description: "Development Server" }],
+    servers: [
+      { 
+        url: process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : `${BASE_URL}:${PORT}`, 
+        description: process.env.VERCEL ? "Production Server" : "Development Server" 
+      }
+    ],
     tags: [
       { name: "Auth", description: "Authentication and account management APIs" },
       { name: "Member", description: "Member registration and profile management APIs" },
@@ -109,7 +115,7 @@ export const swaggerOptions = {
 const swaggerDocs = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-
+// Model relationships
 Blog.hasMany(Comment, { foreignKey: "blog_id", onDelete: "CASCADE" });
 Comment.belongsTo(Blog, { foreignKey: "blog_id" });
 
@@ -131,45 +137,98 @@ Subcounty.belongsTo(County, { foreignKey: "county_id" });
 Subcounty.hasMany(Ward, { foreignKey: "subcounty_id", onDelete: "CASCADE" });
 Ward.belongsTo(Subcounty, { foreignKey: "subcounty_id" });
 
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send({ message: 'Internal server error', statusCode: 500, data: null });
+// Routes - Define these BEFORE starting the server
+app.use('/api/users', authRouter);
+app.use('/api/members', registerRouter);
+app.use('/api/blog', blogRouter);
+app.use("/api/jobs", jobRouter);
+app.use("/api/events", eventRouter);
+app.use("/api/aspirants", aspirantRouter);
+app.use("/api/donations", donationRouter);
+app.use("/api/merchandise", merchRouter);
+app.use("/api/political-applications", politicalRouter);
+app.use("/api/volunteers", volunteerRouter);
+app.use("/api/contact", contactRouter);
+app.use("/api/audit", auditRouter);
+app.use("/api/mpesa", mpesaRouter);
+app.use("/api/locations", locationRouter);
+app.use("/api/party-positions", partyPositionRouter);
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'Server is running',
+    environment: process.env.VERCEL ? 'production' : 'development'
+  });
 });
 
-// Start server after DB connection
-(async () => {
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Shikana Frontliner Party API',
+    docs: '/api-docs'
+  });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send({ 
+    message: 'Internal server error', 
+    statusCode: 500, 
+    data: null 
+  });
+});
+
+// Initialize database connection
+let dbInitialized = false;
+
+async function initializeDatabase() {
+  if (dbInitialized) return;
+  
   try {
     await sequelize.authenticate();
     console.log("Database connected successfully");
-
-    // Sync models and create/update tables
-    // await sequelize.sync({ alter: true });
-    console.log("Tables created/updated successfully");
-
-    // Routes
-    app.use('/api/users', authRouter);
-    app.use('/api/members', registerRouter);
-    app.use('/api/blog', blogRouter);
-    app.use("/api/jobs", jobRouter);
-    app.use("/api/events", eventRouter);
-    app.use("/api/aspirants", aspirantRouter);
-    app.use("/api/donations", donationRouter);
-    app.use("/api/merchandise", merchRouter);
-    app.use("/api/political-applications", politicalRouter);
-    app.use("/api/volunteers", volunteerRouter);
-    app.use("/api/contact", contactRouter);
-    app.use("/api/audit", auditRouter);
-    app.use("/api/mpesa", mpesaRouter);
-    app.use("/api/locations", locationRouter);
-    app.use("/api/party-positions", partyPositionRouter);
-
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-      console.log(`Swagger docs available at ${BASE_URL}:${PORT}/api-docs`);
-    });
+    
+    // DON'T use sequelize.sync() in production
+    // Tables should already exist in cPanel MySQL
+    if (!process.env.VERCEL && process.env.NODE_ENV !== 'production') {
+      // Only sync in local development
+      await sequelize.sync({ alter: true });
+      console.log("Tables created/updated successfully");
+    }
+    
+    dbInitialized = true;
   } catch (err) {
     console.error("Failed to initialize database:", err.message);
+    throw err;
   }
-})();
+}
 
+// For local development - start server
+if (!process.env.VERCEL) {
+  (async () => {
+    try {
+      await initializeDatabase();
+      
+      app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+        console.log(`Swagger docs available at ${BASE_URL}:${PORT}/api-docs`);
+      });
+    } catch (err) {
+      console.error("Failed to start server:", err.message);
+      process.exit(1);
+    }
+  })();
+}
 
+// Export for Vercel serverless
+export default async function handler(req, res) {
+  // Initialize database on first request
+  if (!dbInitialized) {
+    await initializeDatabase();
+  }
+  
+  return app(req, res);
+}
