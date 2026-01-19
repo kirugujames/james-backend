@@ -1,5 +1,6 @@
 import { Sequelize } from "sequelize";
 import mysql from "mysql2/promise";
+import mysql2 from 'mysql2'; // Explicit import for Sequelize dialectModule
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -45,9 +46,10 @@ const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASS, {
   host: DB_HOST,
   port: DB_PORT,
   dialect: "mysql",
+  dialectModule: mysql2, // Fix for Vercel/Serverless: Explicitly provide the mysql2 module
   dialectOptions: {
     connectTimeout: 60000,
-    ssl: false  
+    ssl: false
   },
   pool: {
     max: 5,
