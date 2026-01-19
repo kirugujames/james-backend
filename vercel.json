@@ -1,18 +1,37 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "index.js",
-      "use": "@vercel/node"
+    "version": 2,
+    "builds": [
+        {
+            "src": "index.js",
+            "use": "@vercel/node",
+            "config": {
+                "includeFiles": [
+                    "auth/*.js",
+                    "member-registration/*.js",
+                    "blog/*.js",
+                    "jobs/*.js",
+                    "events/*.js",
+                    "aspirants/*.js",
+                    "donations/*.js",
+                    "merchandise/*.js",
+                    "political-position/*.js",
+                    "volunteer/*.js",
+                    "contact-us/*.js",
+                    "audit-trails/*.js",
+                    "mpesa/*.js",
+                    "locations/*.js",
+                    "party-positions/*.js"
+                ]
+            }
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "index.js"
+        }
+    ],
+    "env": {
+        "NODE_ENV": "production"
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "index.js"
-    }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
 }
