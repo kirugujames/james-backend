@@ -52,10 +52,25 @@ const sequelize = new Sequelize(DB_NAME, DB_USER, DB_PASS, {
     ssl: false
   },
   pool: {
-    max: 1, // Reduced to 1 to avoid 'max_user_connections' error on Vercel
+    max: 1,
     min: 0,
-    acquire: 30000,
+    acquire: 60000, // Increase acquire timeout to 60 seconds
     idle: 10000
+  },
+  retry: {
+    match: [
+      /SequelizeConnectionError/,
+      /SequelizeConnectionRefusedError/,
+      /SequelizeHostNotFoundError/,
+      /SequelizeHostNotReachableError/,
+      /InvalidConnectionError/,
+      /ConnectionTimedOutError/,
+      /TimeoutError/,
+      /ER_TOO_MANY_USER_CONNECTIONS/
+    ],
+    max: 5, // Retry up to 5 times
+    backoffBase: 1000, // Initial backoff 1s
+    backoffExponent: 1.5, // Exponential backoff
   },
   logging: false
 });
