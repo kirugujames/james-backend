@@ -14,7 +14,8 @@ import {
   deleteRole,
   getAllUsers,
   refreshAccessToken,
-  changePassword
+  changePassword,
+  updateUser
 } from "./auth-controller.js";
 import { verifyToken } from "../utils/jwtInterceptor.js";
 import { auditMiddleware } from "../utils/audit-service.js";
@@ -35,13 +36,16 @@ const router = express.Router();
  *             type: object
  *             required:
  *               - email
- *               - username
+ *               - first_name
+ *               - last_name
  *               - role_id
  *               - password
  *             properties:
  *               email:
  *                 type: string
- *               username:
+ *               first_name:
+ *                 type: string
+ *               last_name:
  *                 type: string
  *               role_id:
  *                 type: integer
@@ -638,6 +642,8 @@ router.delete("/role/:id", async (req, res) => {
  *     summary: Get all users
  *     description: Fetches and returns a list of all users from the system.
  *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: List of users retrieved successfully.
@@ -657,13 +663,69 @@ router.delete("/role/:id", async (req, res) => {
  *                   email:
  *                     type: string
  *                     example: johndoe@example.com
+ *                   first_name:
+ *                     type: string
+ *                     example: John
+ *                   last_name:
+ *                     type: string
+ *                     example: Doe
+ *                   Role:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       role_name:
+ *                         type: string
  *       500:
  *         description: Server error.
  */
-router.get("/get-all-users", async (req, res) => {
+router.get("/get-all-users", verifyToken, async (req, res) => {
   const result = await getAllUsers();
   return res.send(result);
 });
 
+/**
+ * @swagger
+ * /api/users/update/{id}:
+ *   patch:
+ *     summary: Update a user by ID
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               first_name:
+ *                 type: string
+ *               last_name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               role_id:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *       404:
+ *         description: User not found
+ *       409:
+ *         description: Email already exists
+ *       500:
+ *         description: Server error
+ */
+router.patch("/update/:id", verifyToken, async (req, res) => {
+  const result = await updateUser(req);
+  return res.status(result.statusCode).json(result);
+});
 
 export default router;

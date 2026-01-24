@@ -1,5 +1,5 @@
 import express from "express";
-import { signUpVolunteer, getAllVolunteers, getVolunteersByEvent } from "./volunteer-controller.js";
+import { signUpVolunteer, getAllVolunteers, getVolunteersByEvent, updateVolunteerStatus } from "./volunteer-controller.js";
 import { verifyToken } from "../utils/jwtInterceptor.js";
 import { auditMiddleware } from "../utils/audit-service.js";
 
@@ -19,31 +19,40 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             required:
- *               - fullName
+ *               - first_name
+ *               - last_name
  *               - email
- *               - volunteerType
+ *               - volunteer_type
  *               - phone
  *               - consent
  *             properties:
- *               fullName:
+ *               first_name:
  *                 type: string
- *                 example: "Jane Doe"
+ *                 example: "Jane"
+ *               last_name:
+ *                 type: string
+ *                 example: "Doe"
  *               email:
  *                 type: string
  *                 example: "jane@example.com"
  *               phone:
  *                 type: string
  *                 example: "0712345678"
- *               volunteerType:
+ *               volunteer_type:
  *                 type: string
  *                 enum: [general, event]
  *                 example: "event"
- *               selected_event:
+ *               event_id:
  *                 type: integer
- *                 example: 5
- *               areasOfInterest:
+ *                 example: 1
+ *               event_name:
  *                 type: string
- *                 example: "Logistics, Communication"
+ *                 example: "Community Cleanup"
+ *               areas_of_interest:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 example: ["Logistics", "Communication"]
  *               consent:
  *                 type: boolean
  *                 example: true
@@ -104,6 +113,41 @@ router.get("/all", verifyToken, async (req, res) => {
  */
 router.get("/event/:event_id", verifyToken, async (req, res) => {
     const result = await getVolunteersByEvent(req);
+    return res.status(result.statusCode).json(result);
+});
+
+/**
+ * @swagger
+ * /api/volunteers/update-status:
+ *   patch:
+ *     summary: Update volunteer status
+ *     tags: [Volunteer]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id
+ *               - status
+ *             properties:
+ *               id:
+ *                 type: integer
+ *               status:
+ *                 type: string
+ *                 enum: [pending, approved, rejected]
+ *               reason:
+ *                 type: string
+ *                 description: Optional reason for rejection
+ *     responses:
+ *       200:
+ *         description: Status updated
+ */
+router.patch("/update-status", verifyToken, auditMiddleware("VOLUNTEER_STATUS_UPDATE"), async (req, res) => {
+    const result = await updateVolunteerStatus(req);
     return res.status(result.statusCode).json(result);
 });
 

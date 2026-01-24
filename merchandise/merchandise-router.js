@@ -56,7 +56,12 @@ router.get("/all", async (req, res) => {
  *               category:
  *                 type: string
  *               size:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               image:
  *                 type: string
+ *                 description: Base64 encoded image string
  *               status:
  *                 type: string
  *                 example: ACTIVE
@@ -98,7 +103,12 @@ router.post("/add", verifyToken, auditMiddleware("MERCH_ADD"), async (req, res) 
  *               category:
  *                 type: string
  *               size:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               image:
  *                 type: string
+ *                 description: Base64 encoded image string
  *               status:
  *                 type: string
  *                 example: ACTIVE

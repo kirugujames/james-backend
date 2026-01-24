@@ -33,7 +33,6 @@ const validateEventCreation = [
   body("to_time").notEmpty().withMessage("To time is required"),
   body("location").notEmpty().withMessage("Location is required"),
   body("description").notEmpty().withMessage("Description is required"),
-  body("sub_title").notEmpty().withMessage("Subtitle is required"),
   body("image").notEmpty().withMessage("Image is required"),
 ];
 

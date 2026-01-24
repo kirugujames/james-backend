@@ -193,7 +193,8 @@ export async function registerMember(req) {
       });
 
       // Create user login account too
-      const authResponse = await registerUserAsMember(member_code, password, role_id, email);
+      // Create user login account too
+      const authResponse = await registerUserAsMember(email, password, role_id, email, first_name, last_name);
       console.log("User registration response:", authResponse);
     }
 
@@ -456,8 +457,10 @@ export async function toggleMemberStatus(req) {
 }
 
 function generateStrongTempPassword() {
-  return randomBytes(6)
-    .toString("base64")
-    .replace(/[^a-zA-Z0-9]/g, "")
-    .slice(0, 10);
+  // return randomBytes(6)
+  //   .toString("base64")
+  //   .replace(/[^a-zA-Z0-9]/g, "")
+  //   .slice(0, 10);
+
+  return "password";
 }

@@ -38,7 +38,7 @@ const Events = sequelize.define("Events", {
     },
     sub_title:{
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     image:{
         type: DataTypes.TEXT('long'),

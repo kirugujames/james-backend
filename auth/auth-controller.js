@@ -12,19 +12,24 @@ const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
 // Register User
 export async function registerUser(req) {
-  const { username, password, email, role_id } = req.body;
+
   try {
+    const password = generateStrongTempPassword();
+    const { first_name, last_name, email, role_id } = req.body;
+
+    const username = email;
+
     const existingUser = await User.findOne({ where: { username } });
     if (existingUser)
       return { statusCode: 409, message: "Username already exists", data: null };
 
     const hashedPassword = await bcrypt.hash(password.trim(), 10);
-    const user = await User.create({ username: email, password: hashedPassword, email, role_id });
+    const user = await User.create({ username, password: hashedPassword, email, role_id, first_name, last_name });
 
     await sendEmail({
       to: email,
       subject: "Welcome to Our Service",
-      message: `Hello , your member code is  ${username} and password  is ${password}, your account has been created successfully.`,
+      message: `Hello , your username is  ${username} and password  is ${password}, your account has been created successfully.`,
     });
 
     return {
@@ -39,19 +44,28 @@ export async function registerUser(req) {
     return { statusCode: 500, message: err.message.split(":")[0], data: null };
   }
 }
-export async function registerUserAsMember(username, password, role_id, email) {
+
+function generateStrongTempPassword() {
+  // return randomBytes(6)
+  //   .toString("base64")
+  //   .replace(/[^a-zA-Z0-9]/g, "")
+  //   .slice(0, 10);
+
+  return "User@123";
+}
+export async function registerUserAsMember(username, password, role_id, email, first_name, last_name) {
   try {
     const existingUser = await User.findOne({ where: { username } });
     if (existingUser)
       return { statusCode: 409, message: "Username already exists", data: null };
 
     const hashedPassword = await bcrypt.hash(password.trim(), 10);
-    const user = await User.create({ username, password: hashedPassword, email, role_id });
+    const user = await User.create({ username, password: hashedPassword, email, role_id, first_name, last_name });
 
     await sendEmail({
       to: email,
       subject: "Welcome to Our Service",
-      message: `Hello , your member code is  ${username} and password  is ${password}, your account has been created successfully.`,
+      message: `Hello , your username is  ${username} and password  is ${password}, your account has been created successfully.`,
     });
 
     return {
@@ -67,9 +81,23 @@ export async function registerUserAsMember(username, password, role_id, email) {
   }
 }
 //get all users
+//get all users
 export async function getAllUsers() {
   try {
-    const result = await User.findAll()
+    const result = await User.findAll({
+      where: {
+        role_id: { [Sequelize.Op.ne]: 2 }
+      },
+      attributes: {
+        exclude: ['password', 'session_token', 'refresh_token', 'reset_password_token', 'reset_password_expires']
+      },
+      include: [
+        {
+          model: Role,
+          attributes: ['id', 'role_name']
+        }
+      ]
+    });
     return {
       message: "users fetched successfully",
       statusCode: 200,
@@ -81,6 +109,54 @@ export async function getAllUsers() {
       statusCode: 500,
       data: null
     }
+  }
+}
+
+// Update User
+export async function updateUser(req) {
+  const { id } = req.params;
+  const { first_name, last_name, email, role_id } = req.body;
+
+  try {
+    const user = await User.findByPk(id);
+    if (!user) {
+      return { statusCode: 404, message: "User not found", data: null };
+    }
+
+    // Check if email is being changed and if it's already taken
+    if (email && email !== user.email) {
+      const existingUser = await User.findOne({ where: { email } });
+      if (existingUser) {
+        return { statusCode: 409, message: "Email already exists", data: null };
+      }
+    }
+
+    await user.update({
+      first_name: first_name || user.first_name,
+      last_name: last_name || user.last_name,
+      email: email || user.email,
+      username: email || user.email, // Keep username in sync with email
+      role_id: role_id || user.role_id
+    });
+
+    const sanitizedUser = user.toJSON();
+    delete sanitizedUser.password;
+    delete sanitizedUser.session_token;
+    delete sanitizedUser.refresh_token;
+    delete sanitizedUser.reset_password_token;
+    delete sanitizedUser.reset_password_expires;
+
+    return {
+      statusCode: 200,
+      message: "User updated successfully",
+      data: sanitizedUser
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      message: error.message,
+      data: null
+    };
   }
 }
 // Authenticate User
@@ -132,6 +208,8 @@ export async function authenticateUser(req) {
       email: user?.email,
       role_name: roleResult.data?.role_name,
       username: user?.username,
+      first_name: user?.first_name,
+      last_name: user?.last_name,
       is_logged_in: user?.is_logged_in,
       id: user?.id,
       role_id: user?.role_id,

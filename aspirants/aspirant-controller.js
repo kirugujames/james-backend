@@ -1,4 +1,5 @@
 import Aspirant_Application from "./models/Aspirant-Application.js";
+import { sendEmail } from "../utils/send-email.js";
 
 // Apply for Aspirant position
 export async function applyForAspirant(req) {
@@ -102,6 +103,26 @@ export async function updateAspirantStatus(req) {
         }
 
         await application.update({ status });
+
+        // Send email notification
+        try {
+            const { email, first_name } = application;
+            let emailMessage = `Dear ${first_name},\n\nYour aspirant application status has been updated to: ${status}.`;
+
+            if (status === 'Rejected' && req.body.reason) {
+                emailMessage += `\n\nReason: ${req.body.reason}`;
+            }
+
+            emailMessage += `\n\nBest regards,\nParty Administration`;
+
+            await sendEmail({
+                to: email,
+                subject: `Aspirant Application Update: ${status}`,
+                message: emailMessage
+            });
+        } catch (emailError) {
+            console.error("Failed to send status update email:", emailError);
+        }
 
         return {
             message: `Aspirant application status updated to ${status} successfully`,

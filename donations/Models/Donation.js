@@ -11,22 +11,39 @@ const Donation = sequelize.define(
         },
         amount: {
             type: DataTypes.DECIMAL(10, 2),
-            allowNull: false,
+            allowNull: true,
         },
         type: {
-            type: DataTypes.ENUM("electronic", "cash"),
-            allowNull: false,
-        },
-        member_id: {
-            type: DataTypes.INTEGER,
-            allowNull: true, // Optional for non-member donations
-        },
-        donor_name: {
             type: DataTypes.STRING,
             allowNull: true,
         },
-        donor_email: {
+        member_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        firstname: {
             type: DataTypes.STRING,
+            allowNull: true,
+        },
+        lastname: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        organization_name: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        email: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        phone: {
+            type: DataTypes.STRING,
+            allowNull: true,
+        },
+        is_anonymous: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
             allowNull: true,
         },
         transaction_id: {

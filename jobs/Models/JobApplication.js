@@ -13,9 +13,15 @@ const JobApplication = sequelize.define(
             type: DataTypes.INTEGER,
             allowNull: false,
         },
-        fullname: {
+        first_name: {
             type: DataTypes.STRING,
             allowNull: false,
+            defaultValue: ""
+        },
+        last_name: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            defaultValue: ""
         },
         email: {
             type: DataTypes.STRING,

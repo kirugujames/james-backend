@@ -1,5 +1,12 @@
 import express from "express";
-import { createElectronicDonation, createCashDonation, getAllDonations } from "./donation-controller.js";
+import {
+    createIndividualDonation,
+    updateIndividualDonation,
+    getIndividualDonations,
+    createOrganizationDonation,
+    updateOrganizationDonation,
+    getOrganizationDonations
+} from "./donation-controller.js";
 import { verifyToken } from "../utils/jwtInterceptor.js";
 import { auditMiddleware } from "../utils/audit-service.js";
 
@@ -7,10 +14,9 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/donations/electronic:
+ * /api/donations/individual/create:
  *   post:
- *     summary: Create an electronic donation
- *     description: Public endpoint to record an electronic donation.
+ *     summary: Create an individual donation
  *     tags: [Donations]
  *     requestBody:
  *       required: true
@@ -18,90 +24,171 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - donorName
- *               - amount
- *               - paymentMethod
  *             properties:
- *               donorName:
- *                 type: string
- *                 example: "John Doe"
  *               amount:
  *                 type: number
- *                 example: 150.00
- *               paymentMethod:
+ *               firstname:
  *                 type: string
- *                 example: "credit_card"
+ *               lastname:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               is_anonymous:
+ *                 type: boolean
  *     responses:
- *       200:
- *         description: Donation recorded successfully
- *       400:
- *         description: Validation error
+ *       201:
+ *         description: Created successfully
  */
-
-// Public link or secured depending on UI
-router.post("/electronic", auditMiddleware("DONATION_ELECTRONIC"), async (req, res) => {
-    const result = await createElectronicDonation(req);
+router.post("/individual/create", async (req, res) => {
+    const result = await createIndividualDonation(req);
     return res.status(result.statusCode).json(result);
 });
 
-// Admin only
 /**
  * @swagger
- * /api/donations/cash:
- *   post:
- *     summary: Record a cash donation
- *     description: Admin endpoint to record a manual cash donation.
+ * /api/donations/individual/update/{id}:
+ *   patch:
+ *     summary: Update an individual donation
  *     tags: [Donations]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
  *     requestBody:
- *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - donorName
- *               - amount
  *             properties:
- *               donorName:
- *                 type: string
- *                 example: "Jane Smith"
  *               amount:
  *                 type: number
- *                 example: 200.00
+ *               firstname:
+ *                 type: string
+ *               lastname:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               is_anonymous:
+ *                 type: boolean
  *     responses:
  *       200:
- *         description: Cash donation recorded successfully
- *       400:
- *         description: Validation error
- *       401:
- *         description: Unauthorized
+ *         description: Updated successfully
  */
-router.post("/cash", verifyToken, auditMiddleware("DONATION_CASH"), async (req, res) => {
-    const result = await createCashDonation(req);
+router.patch("/individual/update/:id", verifyToken, async (req, res) => {
+    const result = await updateIndividualDonation(req);
     return res.status(result.statusCode).json(result);
 });
 
-// Admin only
 /**
  * @swagger
- * /api/donations/all:
+ * /api/donations/individual/all:
  *   get:
- *     summary: Retrieve all donations
- *     description: Admin endpoint to fetch all donation records.
+ *     summary: Get all individual donations
  *     tags: [Donations]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: List of donations retrieved successfully
- *       401:
- *         description: Unauthorized
+ *         description: List of individual donations
  */
-router.get("/all", verifyToken, async (req, res) => {
-    const result = await getAllDonations();
+router.get("/individual/all", verifyToken, async (req, res) => {
+    const result = await getIndividualDonations();
+    return res.status(result.statusCode).json(result);
+});
+
+/**
+ * @swagger
+ * /api/donations/organization/create:
+ *   post:
+ *     summary: Create an organization donation
+ *     tags: [Donations]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               amount:
+ *                 type: number
+ *               organization_name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               is_anonymous:
+ *                 type: boolean
+ *     responses:
+ *       201:
+ *         description: Created successfully
+ */
+router.post("/organization/create", async (req, res) => {
+    const result = await createOrganizationDonation(req);
+    return res.status(result.statusCode).json(result);
+});
+
+/**
+ * @swagger
+ * /api/donations/organization/update/{id}:
+ *   patch:
+ *     summary: Update an organization donation
+ *     tags: [Donations]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               amount:
+ *                 type: number
+ *               organization_name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               is_anonymous:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Updated successfully
+ */
+router.patch("/organization/update/:id", verifyToken, async (req, res) => {
+    const result = await updateOrganizationDonation(req);
+    return res.status(result.statusCode).json(result);
+});
+
+/**
+ * @swagger
+ * /api/donations/organization/all:
+ *   get:
+ *     summary: Get all organization donations
+ *     tags: [Donations]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of organization donations
+ */
+router.get("/organization/all", verifyToken, async (req, res) => {
+    const result = await getOrganizationDonations();
     return res.status(result.statusCode).json(result);
 });
 

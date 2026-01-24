@@ -30,7 +30,8 @@ const Merchandise = sequelize.define(
             defaultValue: 0,
         },
         size: {
-            type: DataTypes.STRING,
+            type: DataTypes.JSON,
+            defaultValue: [],
             allowNull: true,
         },
         image: {

@@ -58,7 +58,8 @@ const validateJobUpdate = [
 
 const validateJobApplication = [
   body("job_id").notEmpty().withMessage("job_id is required"),
-  body("fullname").notEmpty().withMessage("fullname is required"),
+  body("first_name").notEmpty().withMessage("first_name is required"),
+  body("last_name").notEmpty().withMessage("last_name is required"),
   body("email").isEmail().withMessage("Valid email is required"),
   body("phone").notEmpty().withMessage("phone is required"),
 ]
@@ -481,13 +482,16 @@ router.patch("/update", verifyToken, auditMiddleware("JOB_UPDATE"), validateJobU
  *             type: object
  *             required:
  *               - job_id
- *               - fullname
+ *               - first_name
+ *               - last_name
  *               - email
  *               - phone
  *             properties:
  *               job_id:
  *                 type: integer
- *               fullname:
+ *               first_name:
+ *                 type: string
+ *               last_name:
  *                 type: string
  *               email:
  *                 type: string
@@ -534,6 +538,10 @@ router.post("/apply", validateJobApplication, async (req, res) => {
  *               status:
  *                 type: string
  *                 enum: [Pending, Reviewed, Shortlisted, Rejected, Accepted]
+ *               reason:
+ *                 type: string
+ *                 description: Optional reason for rejection or status change
+ *                 example: "Does not meet experience requirements"
  *     responses:
  *       200:
  *         description: Status updated

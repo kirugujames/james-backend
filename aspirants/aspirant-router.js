@@ -143,6 +143,10 @@ router.get("/member/:identifier", verifyToken, async (req, res) => {
  *               status:
  *                 type: string
  *                 enum: [Pending, Approved, Rejected, Under Review]
+ *               reason:
+ *                 type: string
+ *                 description: Optional reason for rejection or status change
+ *                 example: "Does not meet residency requirements"
  *     responses:
  *       200:
  *         description: Status updated

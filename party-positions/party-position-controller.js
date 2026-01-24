@@ -1,4 +1,5 @@
 import PartyPosition from "./models/PartyPosition.js";
+import { sendEmail } from "../utils/send-email.js";
 
 // Apply for Party position
 export async function applyForPartyPosition(req) {
@@ -102,6 +103,26 @@ export async function updatePartyPositionStatus(req) {
         }
 
         await application.update({ status });
+
+        // Send email notification
+        try {
+            const { email, first_name } = application;
+            let emailMessage = `Dear ${first_name},\n\nYour party position application status has been updated to: ${status}.`;
+
+            if (status === 'Rejected' && req.body.reason) {
+                emailMessage += `\n\nReason: ${req.body.reason}`;
+            }
+
+            emailMessage += `\n\nBest regards,\nParty Administration`;
+
+            await sendEmail({
+                to: email,
+                subject: `Party Position Application Update: ${status}`,
+                message: emailMessage
+            });
+        } catch (emailError) {
+            console.error("Failed to send status update email:", emailError);
+        }
 
         return {
             message: `Party position application status updated to ${status} successfully`,

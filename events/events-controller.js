@@ -14,7 +14,6 @@ export async function createEvent(req) {
         to_time,
         location,
         description,
-        sub_title,
         image,
     } = req.body;
     try {
@@ -22,7 +21,7 @@ export async function createEvent(req) {
             event_type,
             event_date,
             title,
-            sub_title,
+            sub_title:"NA",
             location,
             from_time,
             to_time,

@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import Job from "./Models/Job.js";
 import JobApplication from "./Models/JobApplication.js";
+import { sendEmail } from "../utils/send-email.js";
 dotenv.config();
 
 // create job
@@ -144,7 +145,7 @@ export async function updateJobListing(req) {
 // Apply for a job
 export async function applyForJob(req) {
   try {
-    const { job_id, fullname, email, phone, document, cover_letter } = req.body;
+    const { job_id, first_name, last_name, email, phone, document, cover_letter } = req.body;
 
     const job = await Job.findByPk(job_id);
     if (!job) {
@@ -157,7 +158,8 @@ export async function applyForJob(req) {
 
     const application = await JobApplication.create({
       job_id,
-      fullname,
+      first_name,
+      last_name,
       email,
       phone,
       document,
@@ -204,6 +206,27 @@ export async function updateJobApplicationStatus(req) {
     }
 
     await application.update({ status });
+
+    // Send email notification
+    try {
+      const { email, first_name } = application;
+      let emailMessage = `Dear ${first_name},\n\nYour job application status has been updated to: ${status}.`;
+
+      if (status === 'Rejected' && req.body.reason) {
+        emailMessage += `\n\nReason: ${req.body.reason}`;
+      }
+
+      emailMessage += `\n\nBest regards,\nRecruitment Team`;
+
+      await sendEmail({
+        to: email,
+        subject: `Job Application Update: ${status}`,
+        message: emailMessage
+      });
+    } catch (emailError) {
+      console.error("Failed to send status update email:", emailError);
+      // Continue execution, do not fail the request just because email failed
+    }
 
     return {
       message: `Application status updated to ${status} successfully`,
