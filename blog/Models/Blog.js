@@ -16,11 +16,11 @@ const Blog = sequelize.define("Blog", {
     allowNull: false
   },
   content: {
-    type: DataTypes.TEXT,
+    type: DataTypes.TEXT('long'),
     allowNull: false
   },
   image: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT('long'),
     allowNull: false
   },
   posted_by: {

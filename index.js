@@ -201,7 +201,7 @@ async function initializeDatabase() {
     // Tables should already exist in cPanel MySQL
     if (!process.env.VERCEL && process.env.NODE_ENV !== 'production') {
       // Only sync in local development
-      await sequelize.sync({ alter: false });
+      await sequelize.sync({ alter: true });
       console.log("Tables created/updated successfully");
     }
 

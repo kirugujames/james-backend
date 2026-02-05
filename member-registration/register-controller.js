@@ -194,7 +194,7 @@ export async function registerMember(req) {
 
       // Create user login account too
       // Create user login account too
-      const authResponse = await registerUserAsMember(email, password, role_id, email, first_name, last_name);
+      const authResponse = await registerUserAsMember(email, password, 2, email, first_name, last_name);
       console.log("User registration response:", authResponse);
     }
 
